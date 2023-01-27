@@ -24,18 +24,21 @@ To make the project more user-friendly, I hosted a web application on Streamlit 
 In this section, I'll walk you through the steps undertaken to extract data from the number plates.
 
 This is the original image we got.
+
 <img src="data/images/bmw.jpg">
 
 First, we get the bounding box coordinates of the number plate (obtained using YOLOv4). Then we take this bounded region of the image and scale it up by a factor of 3
 ```sh
 image = cv2.resize( image, None, fx = 3, fy = 3, interpolation = cv2.INTER_CUBIC)
 ```
+
 <img src="data/images/original.jpg">
 
 Convert the image into gray-scale
 ```sh
 gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 ```
+
 <img src="data/images/gray.jpg">
 
 Blur the image with Gaussian and Median blurring
@@ -43,6 +46,7 @@ Blur the image with Gaussian and Median blurring
 blur = cv2.GaussianBlur(gray, (5,5), 0)
 blur = cv2.medianBlur(blur, 3)
 ```
+
 <img src="data/images/blur.jpg">
 
 
@@ -50,6 +54,7 @@ Otsu's thresholding
 ```sh
 ret, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
 ```
+
 <img src="data/images/threshed.jpg">
 
 
@@ -58,6 +63,7 @@ Dilate the image
 rect_kern = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))  # create the structuring element
 dilation = cv2.dilate(thresh, rect_kern, iterations = 1)
 ```
+
 <img src="data/images/dilation.jpg">
 
 
@@ -68,6 +74,7 @@ try:
 except:
 	ret_img, contours, hierarchy = cv2.findContours(dilation, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 ```
+
 <img src="data/images/contours.jpg">
 
 
@@ -75,6 +82,7 @@ Sort the contours in their order of appearance from left to right so that the al
 ```sh
 sorted_contours = sorted(contours, key=lambda ctr: cv2.boundingRect(ctr)[0])
 ```
+
 <img src="data/images/limited_contours.jpg">
 
 With this, we are done processing the image. Now we pass each character bounded by its contour to Tesseract to get the outputs and print them on the original image.
